@@ -12,6 +12,8 @@ from torch import Tensor, nn
 from tqdm.auto import tqdm
 from transformer_lens import HookedTransformer
 
+from sae_lens.sae import SAE
+
 from sae_vis.data_config_classes import (
     ActsHistogramConfig,
     FeatureTablesConfig,
@@ -994,8 +996,8 @@ class SaeVisData:
     cfg: SaeVisConfig = field(default_factory=SaeVisConfig)
 
     model: HookedTransformer | None = None
-    encoder: AutoEncoder | None = None
-    encoder_B: AutoEncoder | None = None
+    encoder: SAE | None = None
+    encoder_B: SAE | None = None
 
     def update(self, other: "SaeVisData") -> None:
         """
@@ -1011,31 +1013,31 @@ class SaeVisData:
     @classmethod
     def create(
         cls,
-        encoder: nn.Module,
+        encoder: SAE,
         model: HookedTransformer,
         tokens: Int[Tensor, "batch seq"],
         cfg: SaeVisConfig,
-        encoder_B: AutoEncoder | None = None,
+        encoder_B: SAE | None = None,
     ) -> "SaeVisData":
         from sae_vis.data_fetching_fns import get_feature_data
 
-        # If encoder isn't an AutoEncoder, we wrap it in one
-        if not isinstance(encoder, AutoEncoder):
-            assert set(
-                encoder.state_dict().keys()
-            ).issuperset(
-                {"W_enc", "W_dec", "b_enc", "b_dec"}
-            ), "If encoder isn't an AutoEncoder, it should have weights 'W_enc', 'W_dec', 'b_enc', 'b_dec'"
-            d_in, d_hidden = encoder.W_enc.shape
-            device = encoder.W_enc.device
-            encoder_cfg = AutoEncoderConfig(d_in=d_in, d_hidden=d_hidden)
-            encoder_wrapper = AutoEncoder(encoder_cfg).to(device)
-            encoder_wrapper.load_state_dict(encoder.state_dict(), strict=False)
-        else:
-            encoder_wrapper = encoder
+        # # If encoder isn't an AutoEncoder, we wrap it in one
+        # if not isinstance(encoder, AutoEncoder):
+        #     assert set(
+        #         encoder.state_dict().keys()
+        #     ).issuperset(
+        #         {"W_enc", "W_dec", "b_enc", "b_dec"}
+        #     ), "If encoder isn't an AutoEncoder, it should have weights 'W_enc', 'W_dec', 'b_enc', 'b_dec'"
+        #     d_in, d_hidden = encoder.W_enc.shape
+        #     device = encoder.W_enc.device
+        #     encoder_cfg = AutoEncoderConfig(d_in=d_in, d_hidden=d_hidden)
+        #     encoder_wrapper = AutoEncoder(encoder_cfg).to(device)
+        #     encoder_wrapper.load_state_dict(encoder.state_dict(), strict=False)
+        # else:
+        #     encoder_wrapper = encoder
 
         sae_vis_data = get_feature_data(
-            encoder=encoder_wrapper,
+            encoder=encoder,
             model=model,
             tokens=tokens,
             cfg=cfg,
@@ -1043,7 +1045,7 @@ class SaeVisData:
         )
         sae_vis_data.cfg = cfg
         sae_vis_data.model = model
-        sae_vis_data.encoder = encoder_wrapper
+        sae_vis_data.encoder = encoder
         sae_vis_data.encoder_B = encoder_B
 
         return sae_vis_data
@@ -1230,8 +1232,8 @@ class SaeVisData:
         filename: str | Path,
         cfg: SaeVisConfig,
         model: HookedTransformer,
-        encoder: AutoEncoder,
-        encoder_B: AutoEncoder,
+        encoder: SAE,
+        encoder_B: SAE,
     ) -> "SaeVisData":
         """
         Loads an SaeVisData instance from JSON file. The config, model & encoder arguments must be user-supplied.

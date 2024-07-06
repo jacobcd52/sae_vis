@@ -2,17 +2,18 @@ import math
 import time
 from collections import defaultdict
 
+from sae_lens.sae import SAE
 import einops
 import numpy as np
 import torch
 import torch.nn.functional as F
-from eindex import eindex
 from jaxtyping import Float, Int
 from rich import print as rprint
 from rich.table import Table
 from torch import Tensor
 from tqdm.auto import tqdm
 from transformer_lens import HookedTransformer, utils
+from eindex import eindex
 
 from sae_vis.data_config_classes import (
     SaeVisConfig,
@@ -54,8 +55,8 @@ device = get_device()
 def compute_feat_acts(
     model_acts: Float[Tensor, "batch seq d_in"],
     feature_idx: list[int],
-    encoder: AutoEncoder,
-    encoder_B: AutoEncoder | None = None,
+    encoder: SAE,
+    encoder_B: SAE | None = None,
     corrcoef_neurons: RollingCorrCoef | None = None,
     corrcoef_encoder: RollingCorrCoef | None = None,
     corrcoef_encoder_B: RollingCorrCoef | None = None,
@@ -69,9 +70,9 @@ def compute_feat_acts(
             The activations of the model, which the SAE was trained on.
         feature_idx: list[int]
             The features we're computing the activations for. This will be used to index the encoder's weights.
-        encoder: AutoEncoder
+        encoder: SAE
             The encoder object, which we use to calculate the feature activations.
-        encoder_B: Optional[AutoEncoder]
+        encoder_B: Optional[SAE]
             The encoder-B object, which we use to calculate the feature activations.
         corrcoef_neurons: Optional[RollingCorrCoef]
             The object storing the minimal data necessary to compute corrcoef between feature activations & neurons.
@@ -81,15 +82,18 @@ def compute_feat_acts(
             The object storing minimal data to compute corrcoef between feature activations & encoder-B features.
     """
     # Get the feature act direction by indexing encoder.W_enc, and the bias by indexing encoder.b_enc
-    feature_act_dir = encoder.W_enc[:, feature_idx]  # (d_in, feats)
-    feature_bias = encoder.b_enc[feature_idx]  # (feats,)
+    # feature_act_dir = encoder.W_enc[:, feature_idx]  # (d_in, feats)
+    # feature_bias = encoder.b_enc[feature_idx]  # (feats,)
 
-    # Calculate & store feature activations (we need to store them so we can get the sequence & histogram vis later)
-    x_cent = model_acts - encoder.b_dec * encoder.cfg.apply_b_dec_to_input
-    feat_acts_pre = einops.einsum(
-        x_cent, feature_act_dir, "batch seq d_in, d_in feats -> batch seq feats"
-    )
-    feat_acts = F.relu(feat_acts_pre + feature_bias)
+    # # Calculate & store feature activations (we need to store them so we can get the sequence & histogram vis later)
+    # x_cent = model_acts - encoder.b_dec * encoder.cfg.apply_b_dec_to_input
+    # feat_acts_pre = einops.einsum(
+    #     x_cent, feature_act_dir, "batch seq d_in, d_in feats -> batch seq feats"
+    # )
+    # feat_acts = F.relu(feat_acts_pre + feature_bias)
+
+    # JACOB following line of code is architecture-agnostic
+    feat_acts = encoder.encode_fn(model_acts, feature_idx=feature_idx)
 
     # Update the CorrCoef object between feature activation & neurons
     if corrcoef_neurons is not None:
@@ -566,6 +570,12 @@ def get_feature_data(
     # Create objects to store all the data we'll get from `_get_feature_data`
     sae_vis_data = SaeVisData()
     time_logs = defaultdict(float)
+
+    # Slice tokens, if we're only doing a subset of them
+    if cfg.batch_size is None:
+        tokens = tokens
+    else:
+        tokens = tokens[: cfg.batch_size]
 
     # Get a feature list (need to deal with the case where `cfg.features` is an int, or None)
     if cfg.features is None:
