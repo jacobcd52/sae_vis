@@ -248,7 +248,7 @@ def parse_feature_data(
                 tensor=feature_out_dir, k=layout.feature_tables_cfg.n_rows, largest=True
             )
             feature_out_l1_norm = feature_out_dir.abs().sum(dim=-1, keepdim=True)
-            pct_of_l1: Arr = np.absolute(top3_neurons_aligned.values.to(torch.float32)) / utils.to_numpy(
+            pct_of_l1: Arr = np.absolute(top3_neurons_aligned.values) / utils.to_numpy(
                 feature_out_l1_norm.to(torch.float32)
             )
             feature_tables_data.update(
