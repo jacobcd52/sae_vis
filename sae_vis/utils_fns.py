@@ -341,7 +341,7 @@ class TopK:
     ):
         # JACOB: ensure tensor has correct dtype:
         tensor = tensor.to(torch.float32)
-        
+
         self.k = k
         self.largest = largest
         self.values, self.indices = self.topk(tensor, tensor_mask)
@@ -1052,6 +1052,9 @@ class HistogramData:
         # There might be no data, if the feature never activates
         if data.numel() == 0:
             return cls()
+        
+        # JACOB
+        data = data.to(torch.float32)
 
         # Get min and max of data
         max_value = data.max().item()
