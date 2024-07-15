@@ -208,6 +208,7 @@ def parse_feature_data(
     all_resid_post = all_resid_post.to(torch.float32)
     feature_resid_dir = feature_resid_dir.to(torch.float32)
     feature_out_dir = feature_out_dir.to(torch.float32)
+    W_U = W_U.to(torch.float32)
 
     time_logs = {
         "(4) Getting data for tables": 0.0,
