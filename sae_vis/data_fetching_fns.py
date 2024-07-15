@@ -231,9 +231,10 @@ def parse_feature_data(
 
     # We're using `cfg.feature_centric_layout` to figure out what data we'll need to calculate during this function
     layout = cfg.feature_centric_layout
-    assert isinstance(
-        layout, SaeVisLayoutConfig
-    ), f"Error: cfg.feature_centric_layout must be a SaeVisLayoutConfig object, got {type(layout)}"
+    # JACOB remove this assertion
+    # assert isinstance(
+    #     layout, SaeVisLayoutConfig
+    # ), f"Error: cfg.feature_centric_layout must be a SaeVisLayoutConfig object, got {type(layout)}"
 
     # ! Calculate all data for the left-hand column visualisations, i.e. the 3 tables
 
