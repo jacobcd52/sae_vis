@@ -203,6 +203,12 @@ def parse_feature_data(
             A dictionary containing the time taken for each step of the computation. This is optionally printed at the
             end of the `get_feature_data` function, if `cfg.verbose` is set to True.
     """
+    # JACOB
+    all_feat_acts = all_feat_acts.to(torch.float32)
+    all_resid_post = all_resid_post.to(torch.float32)
+    feature_resid_dir = feature_resid_dir.to(torch.float32)
+    feature_out_dir = feature_out_dir.to(torch.float32)
+
     time_logs = {
         "(4) Getting data for tables": 0.0,
         "(5) Getting data for histograms": 0.0,
