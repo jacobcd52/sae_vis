@@ -339,6 +339,9 @@ class TopK:
         largest: bool = True,
         tensor_mask: Bool[Tensor, "..."] | None = None,
     ):
+        # JACOB: ensure tensor has correct dtype:
+        tensor = tensor.to(torch.float32)
+        
         self.k = k
         self.largest = largest
         self.values, self.indices = self.topk(tensor, tensor_mask)
@@ -376,8 +379,7 @@ class TopK:
         (batch, seq, d_vocab) and its elements are zero if the corresponding token has feature activation zero. In this
         case, we don't want to waste time taking topk over a tensor of zeros.
         """
-        # JACOB: ensure tensor has correct dtype:
-        tensor = tensor.to(torch.float32)
+
         # If no tensor mask is provided, then we just return the topk values and indices
         if tensor_mask is None or not tensor_mask.any():
             k = min(self.k, tensor.shape[-1])
