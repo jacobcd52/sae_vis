@@ -128,7 +128,7 @@ def compute_feat_acts(
             einops.rearrange(feat_acts_B, "batch seq d_hidden -> d_hidden (batch seq)"),
         )
 
-    return feat_acts
+    return feat_acts.to(torch.float32)
 
 
 @torch.inference_mode()
