@@ -249,55 +249,55 @@ def parse_feature_data(
         # Store kwargs (makes it easier to turn the tables on and off individually)
         feature_tables_data = {}
 
-        # Table 1: neuron alignment, based on decoder weights
-        if layout.feature_tables_cfg.neuron_alignment_table:
-            top3_neurons_aligned = TopK(
-                tensor=feature_out_dir, k=layout.feature_tables_cfg.n_rows, largest=True
-            )
-            feature_out_l1_norm = feature_out_dir.abs().sum(dim=-1, keepdim=True)
-            pct_of_l1: Arr = np.absolute(top3_neurons_aligned.values) / utils.to_numpy(
-                feature_out_l1_norm.to(torch.float32)
-            )
-            feature_tables_data.update(
-                neuron_alignment_indices=top3_neurons_aligned.indices.tolist(),
-                neuron_alignment_values=top3_neurons_aligned.values.tolist(),
-                neuron_alignment_l1=pct_of_l1.tolist(),
-            )
+        # # Table 1: neuron alignment, based on decoder weights
+        # if layout.feature_tables_cfg.neuron_alignment_table:
+        #     top3_neurons_aligned = TopK(
+        #         tensor=feature_out_dir, k=layout.feature_tables_cfg.n_rows, largest=True
+        #     )
+        #     feature_out_l1_norm = feature_out_dir.abs().sum(dim=-1, keepdim=True)
+        #     pct_of_l1: Arr = np.absolute(top3_neurons_aligned.values) / utils.to_numpy(
+        #         feature_out_l1_norm.to(torch.float32)
+        #     )
+        #     feature_tables_data.update(
+        #         neuron_alignment_indices=top3_neurons_aligned.indices.tolist(),
+        #         neuron_alignment_values=top3_neurons_aligned.values.tolist(),
+        #         neuron_alignment_l1=pct_of_l1.tolist(),
+        #     )
 
-        # Table 2: neurons correlated with this feature, based on their activations
-        if isinstance(corrcoef_neurons, RollingCorrCoef):
-            neuron_indices, neuron_pearson, neuron_cossim = (
-                corrcoef_neurons.topk_pearson(
-                    k=layout.feature_tables_cfg.n_rows,
-                )
-            )
-            feature_tables_data.update(
-                correlated_neurons_indices=neuron_indices,
-                correlated_neurons_pearson=neuron_pearson,
-                correlated_neurons_cossim=neuron_cossim,
-            )
+        # # Table 2: neurons correlated with this feature, based on their activations
+        # if isinstance(corrcoef_neurons, RollingCorrCoef):
+        #     neuron_indices, neuron_pearson, neuron_cossim = (
+        #         corrcoef_neurons.topk_pearson(
+        #             k=layout.feature_tables_cfg.n_rows,
+        #         )
+        #     )
+        #     feature_tables_data.update(
+        #         correlated_neurons_indices=neuron_indices,
+        #         correlated_neurons_pearson=neuron_pearson,
+        #         correlated_neurons_cossim=neuron_cossim,
+        #     )
 
-        # Table 3: primary encoder features correlated with this feature, based on their activations
-        if isinstance(corrcoef_encoder, RollingCorrCoef):
-            enc_indices, enc_pearson, enc_cossim = corrcoef_encoder.topk_pearson(
-                k=layout.feature_tables_cfg.n_rows,
-            )
-            feature_tables_data.update(
-                correlated_features_indices=enc_indices,
-                correlated_features_pearson=enc_pearson,
-                correlated_features_cossim=enc_cossim,
-            )
+        # # Table 3: primary encoder features correlated with this feature, based on their activations
+        # if isinstance(corrcoef_encoder, RollingCorrCoef):
+        #     enc_indices, enc_pearson, enc_cossim = corrcoef_encoder.topk_pearson(
+        #         k=layout.feature_tables_cfg.n_rows,
+        #     )
+        #     feature_tables_data.update(
+        #         correlated_features_indices=enc_indices,
+        #         correlated_features_pearson=enc_pearson,
+        #         correlated_features_cossim=enc_cossim,
+        #     )
 
-        # Table 4: encoder-B features correlated with this feature, based on their activations
-        if isinstance(corrcoef_encoder_B, RollingCorrCoef):
-            encB_indices, encB_pearson, encB_cossim = corrcoef_encoder_B.topk_pearson(
-                k=layout.feature_tables_cfg.n_rows,
-            )
-            feature_tables_data.update(
-                correlated_b_features_indices=encB_indices,
-                correlated_b_features_pearson=encB_pearson,
-                correlated_b_features_cossim=encB_cossim,
-            )
+        # # Table 4: encoder-B features correlated with this feature, based on their activations
+        # if isinstance(corrcoef_encoder_B, RollingCorrCoef):
+        #     encB_indices, encB_pearson, encB_cossim = corrcoef_encoder_B.topk_pearson(
+        #         k=layout.feature_tables_cfg.n_rows,
+        #     )
+        #     feature_tables_data.update(
+        #         correlated_b_features_indices=encB_indices,
+        #         correlated_b_features_pearson=encB_pearson,
+        #         correlated_b_features_cossim=encB_cossim,
+        #     )
 
         # Add all this data to the list of FeatureTablesData objects
         for i, feat in enumerate(feature_indices):
