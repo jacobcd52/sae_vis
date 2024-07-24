@@ -245,9 +245,9 @@ def parse_feature_data(
 
     # ! Calculate all data for the left-hand column visualisations, i.e. the 3 tables
 
-    if layout.feature_tables_cfg is not None and feature_out_dir is not None:
-        # Store kwargs (makes it easier to turn the tables on and off individually)
-        feature_tables_data = {}
+    # if layout.feature_tables_cfg is not None and feature_out_dir is not None:
+    #     # Store kwargs (makes it easier to turn the tables on and off individually)
+    #     feature_tables_data = {}
 
         # # Table 1: neuron alignment, based on decoder weights
         # if layout.feature_tables_cfg.neuron_alignment_table:
@@ -300,10 +300,10 @@ def parse_feature_data(
         #     )
 
         # Add all this data to the list of FeatureTablesData objects
-        for i, feat in enumerate(feature_indices):
-            feature_data_dict[feat].feature_tables_data = FeatureTablesData(
-                **{k: v[i] for k, v in feature_tables_data.items()}
-            )
+        # for i, feat in enumerate(feature_indices):
+        #     feature_data_dict[feat].feature_tables_data = FeatureTablesData(
+        #         **{k: v[i] for k, v in feature_tables_data.items()}
+        #     )
 
     time_logs["(4) Getting data for tables"] = time.time() - t0
     t0 = time.time()
