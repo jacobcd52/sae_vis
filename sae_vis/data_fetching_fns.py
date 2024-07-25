@@ -314,64 +314,64 @@ def parse_feature_data(
     logits = einops.einsum(
         feature_resid_dir, W_U, "feats d_model, d_model d_vocab -> feats d_vocab"
     )
-    if any(
-        x is not None
-        for x in [layout.act_hist_cfg, layout.logits_hist_cfg, layout.logits_table_cfg]
-    ):
-        for i, (feat, logit_vector) in enumerate(zip(feature_indices, logits)):
-            # Get logits histogram data (no title)
-            if layout.logits_hist_cfg is not None:
-                feature_data_dict[
-                    feat
-                ].logits_histogram_data = LogitsHistogramData.from_data(
-                    data=logit_vector,
-                    n_bins=layout.logits_hist_cfg.n_bins,
-                    tickmode="5 ticks",
-                    title=None,
-                )
+    # if any(
+    #     x is not None
+    #     for x in [layout.act_hist_cfg, layout.logits_hist_cfg, layout.logits_table_cfg]
+    # ):
+    #     for i, (feat, logit_vector) in enumerate(zip(feature_indices, logits)):
+    #         # Get logits histogram data (no title)
+    #         if layout.logits_hist_cfg is not None:
+    #             feature_data_dict[
+    #                 feat
+    #             ].logits_histogram_data = LogitsHistogramData.from_data(
+    #                 data=logit_vector,
+    #                 n_bins=layout.logits_hist_cfg.n_bins,
+    #                 tickmode="5 ticks",
+    #                 title=None,
+    #             )
 
-            # Get data for feature activations histogram (including the title!)
-            if layout.act_hist_cfg is not None:
-                feat_acts = all_feat_acts[..., i]
-                nonzero_feat_acts = feat_acts[feat_acts > 0]
-                frac_nonzero = nonzero_feat_acts.numel() / feat_acts.numel()
-                feature_data_dict[
-                    feat
-                ].acts_histogram_data = ActsHistogramData.from_data(
-                    data=nonzero_feat_acts,
-                    n_bins=layout.act_hist_cfg.n_bins,
-                    tickmode="5 ticks",
-                    title=f"ACTIVATIONS<br>DENSITY = {frac_nonzero:.3%}",
-                )
+    #         # Get data for feature activations histogram (including the title!)
+    #         if layout.act_hist_cfg is not None:
+    #             feat_acts = all_feat_acts[..., i]
+    #             nonzero_feat_acts = feat_acts[feat_acts > 0]
+    #             frac_nonzero = nonzero_feat_acts.numel() / feat_acts.numel()
+    #             feature_data_dict[
+    #                 feat
+    #             ].acts_histogram_data = ActsHistogramData.from_data(
+    #                 data=nonzero_feat_acts,
+    #                 n_bins=layout.act_hist_cfg.n_bins,
+    #                 tickmode="5 ticks",
+    #                 title=f"ACTIVATIONS<br>DENSITY = {frac_nonzero:.3%}",
+    #             )
 
-            if layout.logits_table_cfg is not None:
-                # Get logits table data
-                top_logits = TopK(
-                    logit_vector, k=layout.logits_table_cfg.n_rows, largest=True
-                )
-                bottom_logits = TopK(
-                    logit_vector, k=layout.logits_table_cfg.n_rows, largest=False
-                )
+    #         if layout.logits_table_cfg is not None:
+    #             # Get logits table data
+    #             top_logits = TopK(
+    #                 logit_vector, k=layout.logits_table_cfg.n_rows, largest=True
+    #             )
+    #             bottom_logits = TopK(
+    #                 logit_vector, k=layout.logits_table_cfg.n_rows, largest=False
+    #             )
 
-                top_logits, top_token_ids = (
-                    top_logits.values.tolist(),
-                    top_logits.indices.tolist(),
-                )
-                bottom_logits, bottom_token_ids = (
-                    bottom_logits.values.tolist(),
-                    bottom_logits.indices.tolist(),
-                )
+    #             top_logits, top_token_ids = (
+    #                 top_logits.values.tolist(),
+    #                 top_logits.indices.tolist(),
+    #             )
+    #             bottom_logits, bottom_token_ids = (
+    #                 bottom_logits.values.tolist(),
+    #                 bottom_logits.indices.tolist(),
+    #             )
 
-                # Create a MiddlePlotsData object from this, and add it to the dict
-                feature_data_dict[feat].logits_table_data = LogitsTableData(
-                    bottom_logits=bottom_logits,
-                    bottom_token_ids=bottom_token_ids,
-                    top_logits=top_logits,
-                    top_token_ids=top_token_ids,
-                )
+    #             # Create a MiddlePlotsData object from this, and add it to the dict
+    #             feature_data_dict[feat].logits_table_data = LogitsTableData(
+    #                 bottom_logits=bottom_logits,
+    #                 bottom_token_ids=bottom_token_ids,
+    #                 top_logits=top_logits,
+    #                 top_token_ids=top_token_ids,
+    #             )
 
-    time_logs["(5) Getting data for histograms"] = time.time() - t0
-    t0 = time.time()
+    # time_logs["(5) Getting data for histograms"] = time.time() - t0
+    # t0 = time.time()
 
     # ! Calculate all data for the right-hand visualisations, i.e. the sequences
 
